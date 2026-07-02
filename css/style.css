@@ -1,0 +1,73 @@
+.site-body {
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+/* 投稿画面 */
+.form-post input[type="text"] {
+    width: 285px;
+    padding: 15px;
+    margin-bottom: 15px;
+    background-color: #eee;
+    border-width: 0 0 1px;
+}
+
+.form-post textarea {
+    width: 100%;
+    padding: 15px;
+    background-color: #eee;
+    border-width: 0 0 1px;
+}
+
+.form-post input[type="file"]{
+    margin-bottom: 10px;
+}
+
+.form-post button {
+    padding: 10px 25px;
+    margin: 15px 0;
+    background-color: #ccc;
+    border: 0;
+    border-radius: 20px;
+}
+
+.form-post button.active {
+    background-color: #87cefa;
+}
+
+/* タイムライン */
+.post-wrap {
+    padding: 10px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #ccc;
+}
+
+.post-text {
+    margin: 0;
+}
+
+.post-date {
+    color: #666;
+}
+
+.post-image{
+    margin: 10px 0;
+}
+
+.post-image img{
+    max-width: 300px;
+    max-height: 300px;
+    border-radius: 5px;
+}
+
+/* 削除ボタン */
+.delete-wrap {
+    display: inline;
+    margin-left: 10px;
+}
+
+.delete-wrap button {
+    color: red;
+    cursor: pointer;
+}
