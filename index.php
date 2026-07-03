@@ -1,12 +1,14 @@
 <?php
-// データベース接続する(Local使用)
-// ※ポート番号を入れたら動く
-$dsn = 'mysql:dbname=local;host=127.0.0.1;port=10029;charset=utf8mb4';
-$username = 'root';
-$password = 'root';
 
+// config.phpを読み込む
+require_once 'config.php';
+
+// config.phpの変数をDBに接続する
 try {
-    $pdo = new PDO($dsn, $username, $password);
+    $pdo = new PDO($dsn, $username, $password, [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, // エラー時に例外を投げる
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC, // データを連想配列で取得
+    ]);
 } catch (PDOException $e) {
     exit('データベース接続失敗：' . $e->getMessage());
 }
