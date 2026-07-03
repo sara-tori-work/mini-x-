@@ -13,20 +13,28 @@ if (postImageInput) {
         if (errorEl) errorEl.textContent = '';
         if (!file) return;
 
+        // エラーメッセージを溜めるための配列
+        let errors = [];
+
         // サイズチェック
         const MAX_SIZE = 2 * 1024 * 1024;
         if (file.size > MAX_SIZE) {
-            if (errorEl) errorEl.textContent = "画像サイズは2MB以内にしてください";
-            e.target.value = ''; // 選択をキャンセル
-            return;
+            errors.push("画像サイズは2MB以内にしてください。");
         }
 
         // 実際に画像として読み込めるか確認
         // startsWithの中身はデータの種類（MIMEタイプ）
         if (!file.type.startsWith('image/')) {
-            if (errorEl) errorEl.textContent = "画像ファイルではありません";
+            errors.push("画像ファイルではありません。");
+        }
+
+        // エラーが1つでもあれば表示して選択をキャンセル
+        if(errors.length > 0){
+            if(errorEl){
+                // エラーを繋げて改行して表示
+                errorEl.innerHTML = errors.join('<br />');
+            }
             e.target.value = ''; // 選択をキャンセル
-            return;
         }
     });
 }
