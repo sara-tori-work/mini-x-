@@ -1,4 +1,21 @@
 <?php
+// セッション開始（CSRFトークンの保存に必須）
+session_start();
+
+// CSRFトークンがなければ生成してセッションに保存
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+
+// POST字にトークンを検証する関数
+function verifyCsrfToken(): void
+{
+    $token = $_POST['csrf_token'] ?? '';
+    // hash_equalsはタイミング攻撃対策済みの安全な文字列比較
+    if (!hash_equals($_SESSION['csrf_token'], $token)) {
+        exit('不正なリクエストです。');
+    }
+}
 
 // config.phpを読み込む
 require_once 'config.php';
@@ -20,6 +37,9 @@ const MAX_UPLOAD_SIZE = 2 * 1024 * 1024;
 
 // つぶやくボタンが押されたときの処理
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['message'])) {
+    // 投稿処理の前にチェック
+    verifyCsrfToken();
+
     // 名前が空っぽの場合「名無しさん」
     $name = !empty($_POST['name']) ? $_POST['name'] : "名無しさん";
     $message = $_POST['message'];
@@ -30,12 +50,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['message'])) {
     // ファイルがアップロードされる＆エラーがないかチェック
     if (!empty($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
         // サイズチェック
-        if($_FILES['image']['size'] > MAX_UPLOAD_SIZE){
+        if ($_FILES['image']['size'] > MAX_UPLOAD_SIZE) {
             exit("画像サイズは2MB以内にしてください");
         }
 
         // 実際に画像として読み込めるか確認
-        if(getimagesize($_FILES['image']['tmp_name']) === false){
+        if (getimagesize($_FILES['image']['tmp_name']) === false) {
             exit("画像ファイルではありません");
         }
 
@@ -78,6 +98,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['message'])) {
 
 // 削除ボタンが押されたときの処理
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['delete_id'])) {
+    // 削除処理の前にチェック
+    verifyCsrfToken();
+
     $delete_id = $_POST['delete_id'];
 
     // 削除前に画像ファイルを取得し、DB削除後に物理ファイルも削除する
@@ -128,6 +151,9 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <?php // enctype="multipart/form-data"をつけることでPHPに画像を届ける
         ?>
         <form action="index.php" method="POST" enctype="multipart/form-data" class="form-post">
+            <?php // 変更点：CSRFトークンを埋め込む
+            ?>
+            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES, 'UTF-8'); ?>">
             <input type="text" name="name" placeholder="お名前（省略可）">
             <br>
             <textarea id="postTextarea" name="message" rows="4" cols="40" placeholder="いまどうしてる？" required></textarea>
@@ -163,6 +189,9 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <small class="post-date"><?php echo htmlspecialchars($post['created_at'], ENT_QUOTES, 'UTF-8'); ?></small>
 
                     <form action="index.php" method="POST" class="delete-wrap">
+                        <?php // 変更点：CSRFトークンを埋め込む
+                        ?>
+                        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES, 'UTF-8'); ?>">
                         <?php //type="hidden"で画面には見えない入力欄を指定（投稿IDで削除したいポストを指定）
                         ?>
                         <input type="hidden" name="delete_id" value="<?php echo $post['id']; ?>">
