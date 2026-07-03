@@ -132,8 +132,9 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <br>
             <textarea id="postTextarea" name="message" rows="4" cols="40" placeholder="いまどうしてる？" required></textarea>
             <br>
-            <input type="file" name="image" accept="image/*">
+            <input type="file" id="postImageInput" name="image" accept="image/*">
             <br>
+            <p id="imgErrorMessage" class="img-error-message"></p>
             <button id="submitBtn" type="submit">つぶやく</button>
         </form>
 
@@ -173,7 +174,7 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <?php endforeach; ?>
         <?php endif; ?>
     </main>
-    <script src="./javascript/javascript.js" defer></script>
+    <script src="./javascript/main.js" defer></script>
 </body>
 
 </html>
