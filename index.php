@@ -30,6 +30,15 @@ try {
     exit('データベース接続失敗：' . $e->getMessage());
 }
 
+// uploadsディレクトリの存在確認と自動作成
+const UPLOAD_DIR = __DIR__ . '/uploads';
+
+if(!is_dir(UPLOAD_DIR)){
+    // 第3引数(true)で親ディレクトリ事再帰的に作成
+    // 0755はディレクトリの権限
+    mkdir(UPLOAD_DIR, 0755, true);
+}
+
 // 画像アップロードで許可する拡張子
 const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
 // ファイルサイズ上限定義（2MB）
@@ -73,7 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['message'])) {
             $image_name = time() . '_' . uniqid() . '.' . $extension;
 
             // 一時的に保存されている場所から、作った「uploads」フォルダへ移動させる
-            $uploads_path = 'uploads/' . $image_name;
+            $uploads_path = UPLOAD_DIR . 'uploads/' . $image_name;
 
             // move_uploaded_fileの戻り値をチェックし、失敗したらDBに保存しない
             if (!move_uploaded_file($_FILES['image']['tmp_name'], $uploads_path)) {
@@ -81,6 +90,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['message'])) {
             }
         }
     }
+    // 画像アップロード処理 end------------------------------
 
     // データベースに保存する命令（SQL文）
     $stmt = $pdo->prepare('INSERT INTO posts (name, message, image, created_at) VALUES (:name, :message, :image, NOW())');
