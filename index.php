@@ -15,6 +15,8 @@ try {
 
 // 画像アップロードで許可する拡張子
 const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+// ファイルサイズ上限定義（2MB）
+const MAX_UPLOAD_SIZE = 2 * 1024 * 1024;
 
 // つぶやくボタンが押されたときの処理
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['message'])) {
@@ -27,6 +29,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['message'])) {
     // 画像アップロード処理 start-----------------------------
     // ファイルがアップロードされる＆エラーがないかチェック
     if (!empty($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
+        // サイズチェック
+        if($_FILES['image']['size'] > MAX_UPLOAD_SIZE){
+            exit("画像サイズは2MB以内にしてください");
+        }
+
+        // 実際に画像として読み込めるか確認
+        if(getimagesize($_FILES['image']['tmp_name']) === false){
+            exit("画像ファイルではありません");
+        }
+
         // アップロードされたファイルの“元の名前”を取得
         $original_name = $_FILES['image']['name'];
 
@@ -44,7 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['message'])) {
             $uploads_path = 'uploads/' . $image_name;
 
             // move_uploaded_fileの戻り値をチェックし、失敗したらDBに保存しない
-            if(!move_uploaded_file($_FILES['image']['tmp_name'], $uploads_path)){
+            if (!move_uploaded_file($_FILES['image']['tmp_name'], $uploads_path)) {
                 $image_name = null;
             }
         }
@@ -70,7 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['delete_id'])) {
 
     // 削除前に画像ファイルを取得し、DB削除後に物理ファイルも削除する
     $stmt = $pdo->prepare('SELECT image FROM posts WHERE id = :id');
-    $stmt-> bindValue(':id', $delete_id, PDO::PARAM_INT);
+    $stmt->bindValue(':id', $delete_id, PDO::PARAM_INT);
     // 実行
     $stmt->execute();
     $target = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -83,9 +95,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['delete_id'])) {
     $stmt->execute();
 
     // 投稿削除に成功したら紐づく画像ファイルもuploadsフォルダから削除
-    if($target && !empty($target['image'])){
+    if ($target && !empty($target['image'])) {
         $file_path  = 'uploads/' . $target['image'];
-        if(file_exists($file_path)){
+        if (file_exists($file_path)) {
             unlink($file_path);
         }
     }
