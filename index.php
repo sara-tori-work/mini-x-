@@ -33,7 +33,7 @@ try {
 // uploadsディレクトリの存在確認と自動作成
 const UPLOAD_DIR = __DIR__ . '/uploads';
 
-if(!is_dir(UPLOAD_DIR)){
+if (!is_dir(UPLOAD_DIR)) {
     // 第3引数(true)で親ディレクトリ事再帰的に作成
     // 0755はディレクトリの権限
     mkdir(UPLOAD_DIR, 0755, true);
@@ -60,12 +60,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['message'])) {
     if (!empty($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
         // サイズチェック
         if ($_FILES['image']['size'] > MAX_UPLOAD_SIZE) {
-            exit("画像サイズは2MB以内にしてください");
+            $_SESSION['error_message'] = "画像サイズは2MB以内にしてください。";
+            // 名前とメッセージをセッションに保存
+            $_SESSION['old_input'] = ['name' => $_POST['name'] ?? '', 'message' => $_POST['message'] ?? ''];
+            // index.phpにリダイレクト
+            header('Location: index.php');
+            exit;
         }
 
         // 実際に画像として読み込めるか確認
         if (getimagesize($_FILES['image']['tmp_name']) === false) {
-            exit("画像ファイルではありません");
+            $_SESSION['error_message'] = "画像ファイルではありません。";
+            // 名前とメッセージをセッションに保存
+            $_SESSION['old_input'] = ['name' => $_POST['name'] ?? '', 'message' => $_POST['message'] ?? ''];
+            // index.phpにリダイレクト
+            header('Location: index.php');
+            exit;
         }
 
         // アップロードされたファイルの“元の名前”を取得
@@ -73,7 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['message'])) {
 
         // 他の人が同名ファイルを上げたときに上書きされないよう、ランダムな名前を作る
         // 拡張子（.jpgや.pngを取得）
-        $extension = pathinfo($original_name, PATHINFO_EXTENSION);
+        $extension = strtolower(pathinfo($original_name, PATHINFO_EXTENSION));
 
         // 拡張子が画像として許可されたものか確認
         if (in_array($extension, ALLOWED_EXTENSIONS, true)) {
@@ -82,12 +92,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['message'])) {
             $image_name = time() . '_' . uniqid() . '.' . $extension;
 
             // 一時的に保存されている場所から、作った「uploads」フォルダへ移動させる
-            $uploads_path = UPLOAD_DIR . 'uploads/' . $image_name;
+            $uploads_path = UPLOAD_DIR . '/' . $image_name;
 
             // move_uploaded_fileの戻り値をチェックし、失敗したらDBに保存しない
             if (!move_uploaded_file($_FILES['image']['tmp_name'], $uploads_path)) {
                 $image_name = null;
             }
+        } else {
+            // 拡張子エラーのメッセージを残してリダイレクト
+            $_SESSION['error_message'] = "対応していない画像形式です。（jpg, jpeg, png, gif, webpのみ）";
+            header('Location: index.php');
+            exit;
         }
     }
     // 画像アップロード処理 end------------------------------
@@ -129,7 +144,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['delete_id'])) {
 
     // 投稿削除に成功したら紐づく画像ファイルもuploadsフォルダから削除
     if ($target && !empty($target['image'])) {
-        $file_path  = 'uploads/' . $target['image'];
+        $file_path  = UPLOAD_DIR . '/' . $target['image'];
         if (file_exists($file_path)) {
             unlink($file_path);
         }
@@ -164,11 +179,24 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <?php // 変更点：CSRFトークンを埋め込む
             ?>
             <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES, 'UTF-8'); ?>">
-            <input type="text" name="name" placeholder="お名前（省略可）">
+            <input type="text" name="name" placeholder="お名前（省略可）" value="<?php echo htmlspecialchars($_SESSION['old_input']['name'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
             <br>
-            <textarea id="postTextarea" name="message" rows="4" cols="40" placeholder="いまどうしてる？" required></textarea>
+            <textarea id="postTextarea" name="message" rows="4" cols="40" placeholder="いまどうしてる？" required><?php
+                                                                                                            echo htmlspecialchars($_SESSION['old_input']['message'] ?? '', ENT_QUOTES, 'UTF-8');
+                                                                                                            unset($_SESSION['old_input']); // 表示したら破棄
+                                                                                                            ?></textarea>
             <br>
             <input type="file" id="postImageInput" name="image" accept="image/*">
+            <?php if (!empty($_SESSION['error_message'])) : ?>
+                <br>
+                <p class="img-error-message">
+                    <?php
+                    echo htmlspecialchars($_SESSION['error_message'], ENT_QUOTES, 'UTF-8');
+                    // 表示したエラーは破棄
+                    unset($_SESSION['error_message']);
+                    ?>
+                </p>
+            <?php endif; ?>
             <br>
             <p id="imgErrorMessage" class="img-error-message"></p>
             <button id="submitBtn" type="submit">つぶやく</button>
