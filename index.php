@@ -181,10 +181,12 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES, 'UTF-8'); ?>">
             <input type="text" name="name" placeholder="お名前（省略可）" value="<?php echo htmlspecialchars($_SESSION['old_input']['name'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
             <br>
-            <textarea id="postTextarea" name="message" rows="4" cols="40" placeholder="いまどうしてる？" required><?php
-                                                                                                            echo htmlspecialchars($_SESSION['old_input']['message'] ?? '', ENT_QUOTES, 'UTF-8');
-                                                                                                            unset($_SESSION['old_input']); // 表示したら破棄
-                                                                                                            ?></textarea>
+            <textarea id="postTextarea" name="message" rows="4" cols="40" placeholder="いまどうしてる？" required>
+                <?php
+                echo htmlspecialchars($_SESSION['old_input']['message'] ?? '', ENT_QUOTES, 'UTF-8');
+                unset($_SESSION['old_input']); // 表示したら破棄
+                ?>
+            </textarea>
             <br>
             <input type="file" id="postImageInput" name="image" accept="image/*">
             <?php if (!empty($_SESSION['error_message'])) : ?>
