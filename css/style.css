@@ -15,6 +15,7 @@
 
 .form-post textarea {
     width: 100%;
+    max-width: stretch;
     padding: 15px;
     background-color: #eee;
     border-width: 0 0 1px;
