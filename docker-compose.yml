@@ -1,0 +1,27 @@
+services:
+  # ① PHPとApache（Webサーバー）の部屋
+  web:
+    image: php:8.2-apache
+    ports:
+      - "8080:80" # パソコンの8080番ポートでアクセスできるようにする
+    volumes:
+      - .:/var/www/html # 今のbbsフォルダをまるごとDocker内に同期
+    depends_on:
+      - db
+    # PHPからMySQLに接続するための拡張機能をインストールする命令
+    entrypoint: >
+      sh -c "docker-php-ext-install pdo pdo_mysql && apache2-foreground"
+
+  # ② MySQL（データベース）の部屋
+  db:
+    image: mysql:8.0
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: local
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+volumes:
+  mysql_data:
