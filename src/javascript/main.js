@@ -29,8 +29,8 @@ if (postImageInput) {
         }
 
         // エラーが1つでもあれば表示して選択をキャンセル
-        if(errors.length > 0){
-            if(errorEl){
+        if (errors.length > 0) {
+            if (errorEl) {
                 // エラーを繋げて改行して表示
                 errorEl.innerHTML = errors.join('<br />');
             }
@@ -54,5 +54,20 @@ if (postTextarea && submitButton) {
         } else {
             submitButton.classList.remove('active');
         }
+    });
+}
+
+// ==========================================
+//  Service Workerの登録（対応ブラウザのみ実行）
+// ==========================================
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+            .then((registration) => {
+                console.log('Service Worker登録成功:', registration.scope);
+            })
+            .catch((error) => {
+                console.error('Service Worker登録失敗:', error);
+            });
     });
 }

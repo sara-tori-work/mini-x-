@@ -169,6 +169,11 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <meta charset="UTF-8">
     <title>簡易版X</title>
     <link rel="stylesheet" href="./css/style.css">
+
+    <?php // PWA化のためのタグを追加 ?>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#1da1f2">
+    <link rel="apple-touch-icon" href="/app-icons/icon-192.png">
 </head>
 
 <body class="site-body">
