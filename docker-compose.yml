@@ -1,0 +1,32 @@
+services:
+  # ① PHPとApache（Webサーバー）の部屋
+  web:
+    build: ./php # imageの代わりにbuildを指定しDockerfileを使う
+    ports:
+      - "8080:80" # パソコンの8080番ポートでアクセスできるようにする
+    volumes:
+      - ./src:/var/www/html # 今のbbsフォルダをまるごとDocker内に同期
+    depends_on:
+      - db
+    # PHPからMySQLに接続するための拡張機能をインストールする命令
+    environment: # .envを使ってDB情報を取得
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+
+  # ② MySQL（データベース）の部屋
+  db:
+    image: mysql:8.0
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASS}
+      MYSQL_DATABASE: ${DB_NAME}
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+volumes:
+  mysql_data:

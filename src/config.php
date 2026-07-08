@@ -1,5 +1,5 @@
 <?php
-// .envファイルを読み込んで環境変数として設定する簡易ローダー
+/* .envファイル（同一階層）を読み込んで環境変数として設定する簡易ローダー
 function loadEnv(string $path): void{
     if(!file_exists($path)){
         exit('.envファイルが見つかりません');
@@ -29,6 +29,15 @@ $dsn = sprintf(
     $_ENV['DB_HOST'],
     $_ENV['DB_PORT']
 );
+*/
 
-$username = $_ENV['DB_USER'];
-$password = $_ENV['DB_PASS'];
+// .envが別階層にある場合
+$dsn = sprintf(
+    'mysql:dbname=%s;host=%s;port=%s;charset=utf8mb4',
+    getenv('DB_NAME') ?: 'local',
+    getenv('DB_HOST') ?: '127.0.0.1',
+    getenv('DB_PORT') ?: '3306'
+);
+
+$username = getenv('DB_USER') ?: 'root';
+$password = getenv('DB_PASS') ?: 'root';

@@ -18,7 +18,10 @@ function verifyCsrfToken(): void
 }
 
 // config.phpを読み込む
-require_once 'config.php';
+/** @var string $dsn */
+/** @var string $username */
+/** @var string $password */
+require_once __DIR__ . '/config.php';
 
 // config.phpの変数をDBに接続する
 try {
@@ -181,12 +184,14 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES, 'UTF-8'); ?>">
             <input type="text" name="name" placeholder="お名前（省略可）" value="<?php echo htmlspecialchars($_SESSION['old_input']['name'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
             <br>
-            <textarea id="postTextarea" name="message" rows="4" cols="40" placeholder="いまどうしてる？" required>
-                <?php
-                echo htmlspecialchars($_SESSION['old_input']['message'] ?? '', ENT_QUOTES, 'UTF-8');
-                unset($_SESSION['old_input']); // 表示したら破棄
-                ?>
-            </textarea>
+            <textarea id="postTextarea"
+                name="message"
+                rows="4" cols="40"
+                placeholder="いまどうしてる？"
+                required><?php
+                            echo htmlspecialchars($_SESSION['old_input']['message'] ?? '', ENT_QUOTES, 'UTF-8');
+                            unset($_SESSION['old_input']); // 表示したら破棄
+                            ?></textarea>
             <br>
             <input type="file" id="postImageInput" name="image" accept="image/*">
             <?php if (!empty($_SESSION['error_message'])) : ?>
@@ -218,7 +223,7 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <?php
                         // 画像URL設定。　.は?：より優先順位が低いためかっこで結合対象を明示する。
                         $scheme = !empty($_SERVER['HTTPS']) ? 'https://' : 'http://';
-                        $image_url = $scheme . $_SERVER['HTTP_HOST'] . "/bbs/uploads/" . htmlspecialchars($post['image'], ENT_QUOTES, 'UTF-8');
+                        $image_url = $scheme . $_SERVER['HTTP_HOST'] . "/uploads/" . htmlspecialchars($post['image'], ENT_QUOTES, 'UTF-8');
                         ?>
                         <div class="post-image">
                             <img src="<?php echo $image_url; ?>" alt="投稿画像">
