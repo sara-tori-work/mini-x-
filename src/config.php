@@ -24,10 +24,11 @@ function loadEnv(string $path): void{
 loadEnv(__DIR__ . '/.env');
 
 $dsn = sprintf(
-    'mysql:dbname=%s;host=%s;port=%s;charset=utf8mb4',
+    //'mysql:dbname=%s;host=%s;port=%s;charset=utf8mb4', Local用
+    'mysql:dbname=%s;host=%s;charset=utf8mb4',
     $_ENV['DB_NAME'],
     $_ENV['DB_HOST'],
-    $_ENV['DB_PORT']
+    //$_ENV['DB_PORT'] Local用
 );
 */
 
