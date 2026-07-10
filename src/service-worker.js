@@ -18,7 +18,7 @@ self.addEventListener('install', (event) => {
 // 古いキャッシュの掃除（Verが変わったら前のキャッシュを削除）
 self.addEventListener('activate', (event) => {
     event.waitUntil(
-        catches.keys().then((keys) =>
+        caches.keys().then((keys) =>
             Promise.all(
                 keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
             )
@@ -28,6 +28,11 @@ self.addEventListener('activate', (event) => {
 
 // リクエストが来た時の挙動
 self.addEventListener('fetch', (event) =>{
+    // v1.7.2追加：ET以外のリクエスト（POST送信・投稿・削除など）はService Workerが横取りせず、ブラウザにそのまま処理させる。event.respondWith()を呼ばなければ、ブラウザの標準動作になる。
+    if (event.request.method !== 'GET') {
+        return;
+    }
+
     const url = new URL(event.request.url);
 
     // index.phpのような動的ページは常に最新をネットワークから取得する
@@ -41,6 +46,6 @@ self.addEventListener('fetch', (event) =>{
     // css、jsなどの静的ファイルはキャッシュ優先
     // 高速表示に対応させる
     event.respondWith(
-        caches.match(event.request).then((caches) => cached || fetch(event.request))
+        caches.match(event.request).then((cached) => cached || fetch(event.request))
     );
 });
