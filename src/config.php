@@ -42,3 +42,25 @@ $dsn = sprintf(
 
 $username = getenv('DB_USER') ?: 'root';
 $password = getenv('DB_PASS') ?: 'root';
+
+// v1.7.1変更：Javaの不適切投稿チェックAPIを呼び出す
+function isMessageAllowed(string $message): array{
+    $ch = curl_init('http://java-api:8081/api/check-message'); //DockerCompose内でコンテナ同士が通信するときサービス名がそのままホスト名。
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-type: application/json']);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode(['message' => $message]));
+    curl_setopt($ch, CURLOPT_TIMEOUT, 3); //Javaが応答しなかったら3秒で締める
+
+    $response = curl_exec($ch);
+    curl_close($ch);
+
+    // Java側が応答しない場合は投稿を許可する（障害があったときに投稿全体を止めないため）
+    if($response === false){
+        return [
+            'isValid' => true,
+            'reason' => null
+        ];
+    }
+    return json_decode($response, true);
+}

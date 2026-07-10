@@ -8,8 +8,10 @@ services:
       - ./src:/var/www/html # 今のbbsフォルダをまるごとDocker内に同期
     depends_on:
       - db
+      - java-api # v1.7.1追加：Java-APIが起動してからwebを起動する
     # PHPからMySQLに接続するための拡張機能をインストールする命令
-    environment: # .envを使ってDB情報を取得
+    environment:
+      # .envを使ってDB情報を取得
       DB_HOST: ${DB_HOST}
       DB_PORT: ${DB_PORT}
       DB_NAME: ${DB_NAME}
@@ -27,6 +29,12 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
       - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  # v1.7.1追加：Javaの不適切投稿チェック
+  java-api:
+    build: ./java-api
+    ports:
+      - "8081:8081" # パソコンから直接動作確認する用（なくても内部通信は動く）
 
 volumes:
   mysql_data:

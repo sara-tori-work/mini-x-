@@ -55,6 +55,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['message'])) {
     // 名前が空っぽの場合「名無しさん」
     $name = !empty($_POST['name']) ? $_POST['name'] : "名無しさん";
     $message = $_POST['message'];
+
+    // v1.7.1変更：投稿処理の前に、Javaの不適切投稿チェックAPIを呼び出す
+    $check = isMessageAllowed($message);
+    if (!$check['isValid']) {
+        $_SESSION['error_message'] = $check['reason'];
+        $_SESSION['old_input'] = [
+            'name' => $name,
+            'message' => $message
+        ];
+        header('Location: index.php');
+        exit;
+    }
+
     // 画像がないときはnull
     $image_name = null;
 
@@ -170,7 +183,8 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <title>簡易版X</title>
     <link rel="stylesheet" href="./css/style.css">
 
-    <?php // PWA化のためのタグを追加 ?>
+    <?php // PWA化のためのタグを追加
+    ?>
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#1da1f2">
     <link rel="apple-touch-icon" href="/app-icons/icon-192.png">
