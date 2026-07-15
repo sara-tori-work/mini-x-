@@ -36,7 +36,7 @@ self.addEventListener('fetch', (event) =>{
     const url = new URL(event.request.url);
 
     // index.phpのような動的ページは常に最新をネットワークから取得する
-    if(url.pathname === 'index.php' || url.pathname === '/'){
+    if(url.pathname === '/index.php' || url.pathname === '/'){
         event.respondWith(
             fetch(event.request).catch(() => caches.match(event.request))
         );
